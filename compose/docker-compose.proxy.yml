@@ -1,0 +1,58 @@
+# Routes the aspen web container through the aspen proxy instead of
+# publishing host ports, so any number of instances can run side by side.
+#
+# The aspen.proxy=true label is what the aspen traefik's provider constraint
+# matches; traefik.enable is deliberately never set so koha-testing-docker's
+# proxy ignores aspen stacks entirely.
+#
+# The router matches the instance host and any subdomain of it, so libraries
+# configured on subdomains within an aspen instance are routed too
+# (lib1.mybranch.localhost -> the same container; aspen picks the interface
+# from the Host header).
+#
+# A per-instance tmpfs volume covers sites/<host> so the generated site
+# config never dirties the bind-mounted clone/worktree. Ephemeral is fine:
+# dockerrun.sh regenerates the site config from .env on every start. The
+# uid/gid match the container's remapped www-data user.
+#
+# Required env:
+#   ASPEN_STACK  compose project name (also namespaces the traefik router)
+#   ASPEN_HOST   hostname the instance is served on, e.g. mybranch.localhost
+# Optional env:
+#   ASPEN_URL               full base URL (default: http://${ASPEN_HOST})
+#   ASPEN_PROXY_ENTRYPOINT  traefik entrypoint (web | websecure, default web)
+#   ASPEN_PROXY_TLS         enable TLS on the router (default false)
+
+services:
+  aspen-dev-box:
+    ports: !reset []
+    environment:
+      - SITE_NAME=${ASPEN_HOST}
+      - URL=${ASPEN_URL:-http://${ASPEN_HOST}}
+    volumes:
+      - aspen-site:/usr/local/aspen-discovery/sites/${ASPEN_HOST}
+    networks:
+      - aspen-net
+      - aspen-proxy
+    labels:
+      - "aspen.proxy=true"
+      - "traefik.docker.network=aspen-proxy"
+      - "traefik.http.routers.aspen-${ASPEN_STACK}.rule=Host(`${ASPEN_HOST}`) || HostRegexp(`^.+\\.${ASPEN_HOST}$$`)"
+      - "traefik.http.routers.aspen-${ASPEN_STACK}.entrypoints=${ASPEN_PROXY_ENTRYPOINT:-web}"
+      - "traefik.http.routers.aspen-${ASPEN_STACK}.tls=${ASPEN_PROXY_TLS:-false}"
+      - "traefik.http.services.aspen-${ASPEN_STACK}.loadbalancer.server.port=80"
+
+  solr:
+    ports: !reset []
+
+networks:
+  aspen-proxy:
+    name: aspen-proxy
+    external: true
+
+volumes:
+  aspen-site:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "uid=${UID:-501},gid=${GID:-20}"
