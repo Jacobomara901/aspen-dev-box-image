@@ -24,6 +24,12 @@ running, and `adb down` stops it along with the last proxied stack
 control:
 
 ```shell
+adb proxy up
+```
+
+or without the CLI:
+
+```shell
 docker network create aspen-proxy   # once
 docker compose -f proxy/docker-compose.yml -p aspen-proxy up -d
 ```
@@ -48,12 +54,32 @@ container for Traefik. It needs two env vars and accepts two more:
 `SITE_NAME` and `URL` inside the container are derived from `ASPEN_HOST` /
 `ASPEN_URL`, so the proxied hostname is the single source of truth.
 
+`adb up` handles all of this dynamically: when the aspen proxy is running the
+overlay is layered in automatically and the stack is served on
+`http://<stack>.localhost` (with the proxy's port appended when it isn't 80);
+when the proxy isn't running it falls back to host ports. `--no-proxy` forces
+host ports, `--host` overrides the hostname.
+
+```shell
+adb up -d
+```
+
+or without the CLI:
+
 ```shell
 ASPEN_STACK=mybranch ASPEN_HOST=mybranch.localhost \
 docker compose -p mybranch \
   -f compose/docker-compose.yml \
   -f compose/docker-compose.proxy.yml \
   up -d
+```
+
+Combined with git worktrees of the aspen clone (`adb -w`) this gives one URL
+per branch:
+
+```shell
+git -C $ASPEN_CLONE worktree add ../aspen-my-feature my-feature
+adb -w my-feature up -d           # http://aspen-my-feature.localhost
 ```
 
 `*.localhost` names resolve to loopback without any DNS or `/etc/hosts`
