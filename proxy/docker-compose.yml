@@ -1,0 +1,49 @@
+# Aspen's reverse proxy. One traefik instance routes every proxied aspen
+# stack (dev instances, sandboxes) attached to the external "aspen-proxy"
+# network via container labels.
+#
+# Deliberately separate from koha-testing-docker's proxy: this traefik only
+# routes containers labelled aspen.proxy=true, and aspen containers never set
+# traefik.enable=true, so neither proxy picks up the other's stacks. The
+# default ports are aspen's usual 8083 (and 8443 for TLS) so both proxies run
+# side by side with KTD's on 80/443; override with PROXY_HTTP_PORT /
+# PROXY_HTTPS_PORT (sandbox hosts pin 80/443 in deploy/setup.sh).
+#
+# Bring up with:
+#   adb proxy up
+# or:
+#   docker network create aspen-proxy   # once
+#   docker compose -f proxy/docker-compose.yml -p aspen-proxy up -d
+#
+# Dashboard: http://aspen-proxy.localhost:8083
+
+services:
+  proxy:
+    image: traefik:v3
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=true"
+      - "--providers.docker.constraints=Label(`aspen.proxy`,`true`)"
+      - "--providers.docker.network=aspen-proxy"
+    ports:
+      - "${PROXY_HTTP_PORT:-8083}:80"
+      - "${PROXY_HTTPS_PORT:-8443}:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "aspen.proxy=true"
+      - "traefik.http.routers.aspen-proxy-api.rule=Host(`aspen-proxy.localhost`)"
+      - "traefik.http.routers.aspen-proxy-api.service=api@internal"
+      - "traefik.http.routers.aspen-proxy-api.entrypoints=web"
+    networks:
+      - aspen-proxy
+
+networks:
+  aspen-proxy:
+    name: aspen-proxy
+    external: true
