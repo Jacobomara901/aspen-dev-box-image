@@ -74,10 +74,23 @@ the MARC and supplemental files up from there and indexes them.
 The first boot of evergreen-testing-docker loads the sample data, so the
 import can take a few minutes. `adb ls` shows the import status next to the
 ILS (`evergreen (import ok)`) and `adb logs --service evergreen-import-init`
-shows what it is waiting on. The job copies the export every time, so to
-bring later Evergreen changes into Aspen run `bin/etd export` in
-evergreen-testing-docker and then `adb up` again. Aspen only reprocesses
-files newer than its last run.
+shows what it is waiting on. The job copies the whole export every time it
+runs, so an `adb up` on an existing stack imports it again from scratch.
+Aspen only reprocesses files newer than its last run.
+
+### Keeping records in sync
+
+A second helper container (`evergreen-sync`) stays up after the import. Every
+couple of minutes it copies new files out of the Evergreen stack's
+`marc_delta` directory into the site's ILS directory, and once an hour it
+refreshes the supplemental CSVs. Changes you make in Evergreen reach Aspen
+without another `adb up`. `EVERGREEN_SYNC_INTERVAL` sets the gap between
+passes in seconds (default 120).
+
+Aspen only reads the copied files when its Evergreen export job runs, and
+cron is what starts that job. `adb up --no-cron` therefore means nothing is
+indexed until you run `adb cron start`.
+`adb logs --service evergreen-sync` shows what has been copied.
 
 **Logins:**
 

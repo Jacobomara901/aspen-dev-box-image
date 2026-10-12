@@ -176,7 +176,7 @@ container of the stack.
 | `-f, --follow` | Follow logs in real time |
 | `-i, --include-indexing` | Include the indexing logs |
 | `-c, --container` | Show the aspen container's stdout (entrypoint, boot banner) instead of the site logs |
-| `-s, --service` | Show another service's container output: `aspen-db`, `solr`, `koha-oauth-init`, `evergreen-import-init`, `phpmyadmin` |
+| `-s, --service` | Show another service's container output: `aspen-db`, `solr`, `koha-oauth-init`, `evergreen-import-init`, `evergreen-sync`, `phpmyadmin` |
 
 ```shell
 adb logs -f                   # site logs
