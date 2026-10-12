@@ -32,7 +32,7 @@ if docker exec "$ASPEN_CONTAINER" test -f "$ILS_DIR/marc/all_bibs.mrc"; then
   exit 0
 fi
 
-DEADLINE=$(($(date +%s) + 900))
+DEADLINE=$(($(date +%s) + 1200))
 
 while [ "$(date +%s)" -lt "$DEADLINE" ]; do
   if docker exec "$EVERGREEN_CONTAINER" test -f /eg_ready 2>/dev/null; then
@@ -49,9 +49,11 @@ fi
 
 echo "evergreen-import: copying the export into $ILS_DIR"
 
+EXPORT_TAR=$(mktemp)
+docker exec "$EVERGREEN_CONTAINER" tar -C /exports/aspen -cf - . > "$EXPORT_TAR"
 docker exec "$ASPEN_CONTAINER" mkdir -p "$ILS_DIR"
-docker exec "$EVERGREEN_CONTAINER" tar -C /exports/aspen -cf - . \
-  | docker exec -i "$ASPEN_CONTAINER" tar -C "$ILS_DIR" -xf -
+docker exec -i "$ASPEN_CONTAINER" tar -C "$ILS_DIR" -xf - < "$EXPORT_TAR"
+rm -f "$EXPORT_TAR"
 
 if ! docker exec "$ASPEN_CONTAINER" test -f "$ILS_DIR/marc/all_bibs.mrc"; then
   echo "evergreen-import: copy finished without marc/all_bibs.mrc" >&2
