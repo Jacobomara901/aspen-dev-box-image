@@ -19,7 +19,6 @@ services:
     command: ["sh", "/setup.sh"]
     environment:
       - EVERGREEN_STACK=${EVERGREEN_STACK:-egdev}
-      - SITE_NAME=${SITE_NAME:-dev.localhost}
     depends_on:
       aspen-dev-box:
         condition: service_healthy
