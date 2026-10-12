@@ -18,6 +18,21 @@ services:
       aspen-dev-box:
         condition: service_healthy
 
+  evergreen-sync:
+    image: docker:cli
+    attach: false
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "$ASPEN_DOCKER/scripts/sync_evergreen_delta.sh:/sync.sh:ro"
+    command: ["sh", "/sync.sh"]
+    environment:
+      - EVERGREEN_STACK=${EVERGREEN_STACK:-egdev}
+      - EVERGREEN_SYNC_INTERVAL=${EVERGREEN_SYNC_INTERVAL:-120}
+    depends_on:
+      evergreen-import-init:
+        condition: service_completed_successfully
+
 networks:
   evergreen-net:
     external: true
