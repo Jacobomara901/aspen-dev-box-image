@@ -27,11 +27,6 @@ fi
 
 ILS_DIR="/data/aspen-discovery/$SITE/ils"
 
-if docker exec "$ASPEN_CONTAINER" test -f "$ILS_DIR/marc/all_bibs.mrc"; then
-  echo "evergreen-import: export already present in $ILS_DIR, skipping"
-  exit 0
-fi
-
 DEADLINE=$(($(date +%s) + 1200))
 
 while [ "$(date +%s)" -lt "$DEADLINE" ]; do
@@ -62,4 +57,4 @@ fi
 
 docker exec "$ASPEN_CONTAINER" chown -R www-data:www-data "$ILS_DIR"
 
-echo "evergreen-import: export copied, aspen will index it on the next evergreen export run"
+echo "evergreen-import: export copied, aspen indexes it on its next evergreen export run"
