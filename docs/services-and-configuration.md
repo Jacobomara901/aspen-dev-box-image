@@ -43,7 +43,7 @@ selects them by flag:
 | `compose/docker-compose.ils.yml` | any `--ils` config | Applies the generated ILS setup SQL |
 | `compose/docker-compose.koha.yml` | `--ils koha` | Joins the koha-testing-docker network, OAuth provisioning |
 | `compose/docker-compose.plugins.yml` | `--plugins` | Plugin dir mount |
-| `compose/docker-compose.evergreen.yml` | `--ils evergreen` | Evergreen ILS stack |
+| `compose/docker-compose.evergreen.yml` | `--ils evergreen` | Joins the evergreen-testing-docker network, copies its export into the site |
 | `compose/docker-compose.debug.java.yml` | `adb up -j` | JDWP port for `adb debug` |
 | `compose/docker-compose.tests.yml` | `adb tests` | Throwaway phpunit runner with its own database |
 | `compose/docker-compose.proxied-instance.yml` | proxy running | Drops host ports, routes the stack by hostname ([Aspen Proxy](proxy.md)) |
@@ -73,6 +73,7 @@ your shell takes precedence over the file.
 | `ASPEN_PORT` / `SOLR_HOST_PORT` / `DBGUI_PORT` / `JAVA_DEBUG_PORT` | `8083` / `8084` / `8085` / `5005` | Host ports with `--no-proxy` (`JAVA_DEBUG_PORT` always binds, JDWP is not HTTP) |
 | `PROXY_HTTP_PORT` / `PROXY_HTTPS_PORT` / `PROXY_SOLR_PORT` / `PROXY_DBGUI_PORT` / `PROXY_DASHBOARD_PORT` | `8083` / `8443` / `8084` / `8085` / `8090` | Host ports the proxy binds ([Aspen Proxy](proxy.md)) |
 | `KOHA_STACK` | `kohadev` | koha-testing-docker stack to join; `adb up -k` sets it per run |
+| `EVERGREEN_STACK` | `egdev` | evergreen-testing-docker stack to join with `--ils evergreen`; `adb up -e` sets it per run |
 | `ASPEN_CRON` | `1` | Set to `0` to boot without cron; `adb up --no-cron` sets it per run, `adb cron start|stop` toggles it live |
 | `PHP_FPM_HOST` / `PHP_FPM_PORT` | `127.0.0.1` / `9000` | Apache → PHP-FPM proxying inside the container |
 | `ASPEN_PLUGINS` | `$ASPEN_DOCKER/plugins` | Host plugins directory ([Plugins](plugins.md)) |

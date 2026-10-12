@@ -36,6 +36,9 @@ Behind the scenes this runs through the aspen proxy, so additional instances
 **Note:** by default `adb up` connects to a running
 [koha-testing-docker](https://gitlab.com/koha-community/koha-testing-docker)
 stack. Start that first, or run `adb up --ils none` for a standalone Aspen.
+`adb up --ils evergreen` connects to a running
+[evergreen-testing-docker](https://github.com/jacobomara901/evergreen-testing-docker)
+stack the same way.
 
 **Logins:**
 

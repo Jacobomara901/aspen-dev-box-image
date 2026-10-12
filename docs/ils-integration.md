@@ -48,17 +48,39 @@ adb oauth <client_id> <client_secret> [-d Driver] [-p]
 
 ## Evergreen
 
-An Evergreen ILS stack ships as a preset:
+`adb up --ils evergreen` integrates with a running
+[evergreen-testing-docker](https://github.com/jacobomara901/evergreen-testing-docker)
+stack by joining its external `egnet` network and pointing Aspen's account
+profile at the Evergreen container.
+
+**⚠️ Important:** evergreen-testing-docker must be up first, or the external
+network won't exist and `adb up` will fail.
+
+If you run more than one evergreen-testing-docker stack, pick which one to
+connect to:
 
 ```shell
-adb up --ils evergreen
+adb up --ils evergreen -e my-eg-stack   # default: egdev
 ```
 
-This adds `compose/docker-compose.evergreen.yml`, which runs an Evergreen ILS
-container (`mobiusoffice/evergreen-ils`, pull it with `adb pull -e`) on a
-shared `evergreen-net` network and seeds Aspen's Evergreen account and
-indexing profiles from `ils/evergreen.yml`. `export_utils/` is mounted into
-both containers for export experiments.
+### Importing records
+
+On first boot a helper container (`evergreen-import-init`) waits for the
+Evergreen stack to be ready, then copies the Aspen export it writes
+(`/exports/aspen`) into the site's ILS directory
+(`/data/aspen-discovery/<SITE_NAME>/ils`). Aspen's Evergreen export job picks
+the MARC and supplemental files up from there and indexes them.
+
+The first boot of evergreen-testing-docker loads the sample data, so the
+import can take a few minutes. `adb ls` shows the import status next to the
+ILS (`evergreen (import ok)`) and `adb logs --service evergreen-import-init`
+shows what it is waiting on. The job skips the copy when the export is
+already in place, so re-running `adb up` is safe.
+
+**Logins:**
+
+* Evergreen staff: `admin` / `demo123`
+* Patrons: their barcode with the password `demo123`
 
 ## Custom ILS configs
 

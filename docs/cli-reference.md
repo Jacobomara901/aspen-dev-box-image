@@ -52,6 +52,7 @@ always; worktrees and named stacks get `http://<stack>.localhost:8083`.
 | `-p, --pull` | Pull registry images before starting |
 | `-i, --ils` | ILS preset name, path to a YAML config, or `none` (default: `koha`) |
 | `-k, --koha-stack` | koha-testing-docker stack to connect to (default: `kohadev`) |
+| `-e, --evergreen-stack` | evergreen-testing-docker stack to connect to with `--ils evergreen` (default: `egdev`) |
 | `--plugins` | Mount a plugins dir and enable Aspen plugin loading ([Plugins](plugins.md)) |
 | `--plugins-path` | Host path of the plugins dir (default: `$ASPEN_PLUGINS` or `$ASPEN_DOCKER/plugins`) |
 | `--no-proxy` | Bind host ports directly instead of routing through the proxy |
@@ -67,6 +68,7 @@ adb up --ils none             # standalone Aspen, no ILS
 adb up --ils evergreen        # Evergreen instead of Koha
 adb up -i /path/to/custom.yml # custom ILS config
 adb up -k my-koha-stack       # proxied koha-testing-docker stack
+adb up --ils evergreen -e my-eg-stack  # a named evergreen-testing-docker stack
 adb up -d --no-proxy          # old-style host ports, no proxy involved
 ```
 
@@ -106,22 +108,25 @@ adb restart aspen-dev-box     # re-run the entrypoint only
 
 List every aspen stack docker knows about (the default instance, worktrees
 and `--stack` names) with the state of its aspen, database and Solr
-containers, its URL, the ILS it is wired to (including whether the Koha OAuth
-setup succeeded) and the clone it serves. The stack `adb` currently targets
-is marked with `*`. `adb list` and `adb ps` are aliases.
+containers, its URL, the ILS it is wired to (including whether its setup job,
+the Koha OAuth client or the Evergreen import, succeeded) and the clone it
+serves. The stack `adb` currently targets is marked with `*`. `adb list` and
+`adb ps` are aliases.
 
 ### `adb doctor`
 
 Check the machine before the first `adb up`: `ASPEN_DOCKER` and `ASPEN_CLONE`
 point at the right checkouts, `.env` exists, the host `UID`/`GID` mapping,
 the docker daemon and compose v2, the koha-testing-docker network the default
-`--ils koha` needs, and the host ports the proxy binds. Exits non-zero when
-something needs fixing. `adb doctor` is the one command that runs without
+`--ils koha` needs, the evergreen-testing-docker network `--ils evergreen`
+needs, and the host ports the proxy binds. Exits non-zero when something needs
+fixing. `adb doctor` is the one command that runs without
 `ASPEN_DOCKER`/`ASPEN_CLONE` set.
 
 | Flag | Description |
 |------|-------------|
 | `-k, --koha-stack` | koha-testing-docker stack whose network to look for (default: `kohadev`) |
+| `-e, --evergreen-stack` | evergreen-testing-docker stack whose network to look for (default: `egdev`) |
 
 ### `adb proxy`
 
@@ -141,12 +146,7 @@ adb proxy down
 
 Pull every image the dev box uses: everything referenced by the compose files
 (the stack, all overlays, the proxy) plus the JDK and less images behind
-`adb jarbuild` and `adb compilecss`. The Evergreen image is large and only
-pulled on request.
-
-| Flag | Description |
-|------|-------------|
-| `-e, --evergreen` | Also pull the Evergreen ILS image |
+`adb jarbuild` and `adb compilecss`.
 
 ### `adb version`
 
@@ -176,7 +176,7 @@ container of the stack.
 | `-f, --follow` | Follow logs in real time |
 | `-i, --include-indexing` | Include the indexing logs |
 | `-c, --container` | Show the aspen container's stdout (entrypoint, boot banner) instead of the site logs |
-| `-s, --service` | Show another service's container output: `aspen-db`, `solr`, `koha-oauth-init`, `phpmyadmin` |
+| `-s, --service` | Show another service's container output: `aspen-db`, `solr`, `koha-oauth-init`, `evergreen-import-init`, `phpmyadmin` |
 
 ```shell
 adb logs -f                   # site logs
