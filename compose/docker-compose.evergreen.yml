@@ -4,11 +4,6 @@ services:
       - aspen-net
       - evergreen-net
 
-  aspen-db:
-    networks:
-      - aspen-net
-      - evergreen-net
-
   evergreen-import-init:
     image: docker:cli
     attach: false
