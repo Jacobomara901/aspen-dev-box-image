@@ -74,8 +74,10 @@ the MARC and supplemental files up from there and indexes them.
 The first boot of evergreen-testing-docker loads the sample data, so the
 import can take a few minutes. `adb ls` shows the import status next to the
 ILS (`evergreen (import ok)`) and `adb logs --service evergreen-import-init`
-shows what it is waiting on. The job skips the copy when the export is
-already in place, so re-running `adb up` is safe.
+shows what it is waiting on. The job copies the export every time, so to
+bring later Evergreen changes into Aspen run `bin/etd export` in
+evergreen-testing-docker and then `adb up` again. Aspen only reprocesses
+files newer than its last run.
 
 **Logins:**
 
