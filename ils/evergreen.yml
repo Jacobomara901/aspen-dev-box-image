@@ -32,7 +32,7 @@ indexing_profile:
   status: s
   iType: g
   format: g
-  collection: c
+  collection: ''
   barcode: p
   volume: ''
   totalCheckouts: ''
