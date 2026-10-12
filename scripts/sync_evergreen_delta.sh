@@ -53,12 +53,28 @@ listing() {
 }
 
 copy_file() {
-  if ! docker exec "$EVERGREEN_CONTAINER" cat "/exports/aspen/$1" \
-    | docker exec -i "$ASPEN_CONTAINER" sh -c "cat > '$ILS_DIR/$1'"; then
+  SRC="/exports/aspen/$1"
+  DEST="$ILS_DIR/$1"
+  PART="$DEST.part"
+
+  if ! docker exec "$EVERGREEN_CONTAINER" cat "$SRC" \
+    | docker exec -i "$ASPEN_CONTAINER" sh -c "cat > '$PART'"; then
+    docker exec "$ASPEN_CONTAINER" rm -f "$PART"
     echo "evergreen-sync: failed to copy $1" >&2
     return 1
   fi
-  docker exec "$ASPEN_CONTAINER" chown www-data:www-data "$ILS_DIR/$1"
+
+  SRC_SIZE=$(docker exec "$EVERGREEN_CONTAINER" stat -c %s "$SRC" 2>/dev/null || true)
+  DEST_SIZE=$(docker exec "$ASPEN_CONTAINER" stat -c %s "$PART" 2>/dev/null || true)
+
+  if [ -z "$SRC_SIZE" ] || [ "$SRC_SIZE" != "$DEST_SIZE" ]; then
+    docker exec "$ASPEN_CONTAINER" rm -f "$PART"
+    echo "evergreen-sync: short copy of $1, will retry" >&2
+    return 1
+  fi
+
+  docker exec "$ASPEN_CONTAINER" mv "$PART" "$DEST"
+  docker exec "$ASPEN_CONTAINER" chown www-data:www-data "$DEST"
   echo "evergreen-sync: copied $1"
 }
 
