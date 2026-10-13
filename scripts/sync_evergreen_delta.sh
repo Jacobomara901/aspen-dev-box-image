@@ -49,11 +49,11 @@ remember() {
 }
 
 listing() {
-  docker exec "$EVERGREEN_CONTAINER" sh -c "ls -1 '/exports/aspen/$1' 2>/dev/null" || true
+  docker exec "$EVERGREEN_CONTAINER" sh -c "ls -1 '/exports/$1' 2>/dev/null" || true
 }
 
 copy_file() {
-  SRC="/exports/aspen/$1"
+  SRC="/exports/$1"
   DEST="$ILS_DIR/$1"
   PART="$DEST.part"
 

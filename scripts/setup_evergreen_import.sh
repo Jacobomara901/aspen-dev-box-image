@@ -45,7 +45,7 @@ fi
 echo "evergreen-import: copying the export into $ILS_DIR"
 
 EXPORT_TAR=$(mktemp)
-docker exec "$EVERGREEN_CONTAINER" tar -C /exports/aspen -cf - . > "$EXPORT_TAR"
+docker exec "$EVERGREEN_CONTAINER" tar -C /exports -cf - . > "$EXPORT_TAR"
 docker exec "$ASPEN_CONTAINER" mkdir -p "$ILS_DIR"
 docker exec -i "$ASPEN_CONTAINER" tar -C "$ILS_DIR" -xf - < "$EXPORT_TAR"
 rm -f "$EXPORT_TAR"

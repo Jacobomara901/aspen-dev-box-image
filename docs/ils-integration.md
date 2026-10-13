@@ -67,7 +67,7 @@ adb up --ils evergreen -e my-eg-stack   # default: egdev
 
 On first boot a helper container (`evergreen-import-init`) waits for the
 Evergreen stack to be ready, then copies the Aspen export it writes
-(`/exports/aspen`) into the site's ILS directory
+(`/exports`) into the site's ILS directory
 (`/data/aspen-discovery/<SITE_NAME>/ils`). Aspen's Evergreen export job picks
 the MARC and supplemental files up from there and indexes them.
 
