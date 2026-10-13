@@ -6,6 +6,7 @@ services:
 
   evergreen-import-init:
     image: docker:cli
+    network_mode: none
     attach: false
     restart: 'no'
     volumes:
@@ -20,6 +21,7 @@ services:
 
   evergreen-sync:
     image: docker:cli
+    network_mode: none
     attach: false
     restart: unless-stopped
     volumes:
