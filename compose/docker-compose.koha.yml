@@ -11,6 +11,7 @@ services:
 
   koha-oauth-init:
     image: docker:cli
+    network_mode: none
     attach: false
     restart: 'no'
     volumes:
