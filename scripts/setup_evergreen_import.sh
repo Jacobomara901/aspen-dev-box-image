@@ -57,4 +57,10 @@ fi
 
 docker exec "$ASPEN_CONTAINER" chown -R www-data:www-data "$ILS_DIR"
 
-echo "evergreen-import: export copied, aspen indexes it on its next evergreen export run"
+echo "evergreen-import: restarting the aspen export so it reads the files now"
+
+docker exec "$ASPEN_CONTAINER" sh -c 'pkill -f evergreen_export.jar || true'
+docker exec "$ASPEN_CONTAINER" sudo -u www-data php \
+  /usr/local/aspen-discovery/docker/files/cron/checkBackgroundProcessesDocker.php "$SITE"
+
+echo "evergreen-import: export copied, the aspen export is reading it now"
