@@ -17,11 +17,8 @@ remap_www_data
 getent group aspen_apache > /dev/null 2>&1 || groupadd -o -g "${LOCAL_GROUP_ID}" aspen_apache
 usermod -a -G aspen_apache,sudo www-data
 
-if ! id aspen > /dev/null 2>&1; then
-    useradd -r -o -u "${LOCAL_USER_ID}" -g www-data -G aspen_apache -m -s /bin/bash aspen
-else
-    usermod -o -u "${LOCAL_USER_ID}" -g www-data aspen
-fi
+ensure_aspen_user
+usermod -a -G aspen_apache aspen
 
 if ! id solr > /dev/null 2>&1; then
     useradd -r -o -u "${LOCAL_USER_ID}" -g www-data -M -s /bin/bash solr

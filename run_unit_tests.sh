@@ -25,6 +25,7 @@ set +e
 (
     set -e
     remap_www_data
+    ensure_aspen_user
     ensure_composer
     create_site_config "${CONFIG_DIRECTORY}"
     (cd /usr/local/aspen-discovery/docker/files/scripts && php syncEnvToConfig.php)

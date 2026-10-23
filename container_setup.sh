@@ -18,6 +18,14 @@ remap_www_data() {
     usermod -o -u "${LOCAL_USER_ID:-501}" -s /bin/bash www-data
 }
 
+ensure_aspen_user() {
+    if id aspen > /dev/null 2>&1; then
+        usermod -o -u "${LOCAL_USER_ID:-501}" -g www-data aspen
+        return 0
+    fi
+    useradd -r -o -u "${LOCAL_USER_ID:-501}" -g www-data -m -s /bin/bash aspen
+}
+
 create_site_config() {
     local config_dir="$1"
     mkdir -p "${config_dir}"
