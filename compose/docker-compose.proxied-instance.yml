@@ -4,6 +4,7 @@ services:
     environment:
       - SITE_NAME=${ASPEN_HOST}
       - URL=${ASPEN_URL:-http://${ASPEN_HOST}}
+      - SOLR_HOST=${ASPEN_STACK}-solr-1
     volumes:
       - aspen-site:/usr/local/aspen-discovery/sites/${ASPEN_HOST}
     networks:
